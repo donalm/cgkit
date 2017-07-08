@@ -866,7 +866,7 @@ class MAReader:
     method that has to execute the command. These callback methods
     have to be implemented in a derived class.
 
-    There are 12 MEL commands that can appear in a Maya ASCII file: 
+    There are 14 MEL commands that can appear in a Maya ASCII file: 
 
     - file 
     - requires 
@@ -880,6 +880,8 @@ class MAReader:
     - parent 
     - select
     - lockNode
+    - rename
+    - relationship
 
     Each command has a number of arguments and can also take
     options. The callback methods receive the arguments as regular
@@ -1132,6 +1134,17 @@ class MAReader:
                                     "ic":"ignoreComponents" }
         self.lockNode_opt_def = { "lock" : (1, None),
                                   "ignoreComponents" : (0, None) }
+
+        # rename options
+        self.rename_name_dict = { "is":"ignoreShape",
+                                  "uid":"uuid" }
+        self.rename_opt_def = { "ignoreShape" : (0, None),
+                                "uuid" : (1, None) }
+        # relationship options
+        self.relationship_name_dict = { "b":"break",
+                                        "rd":"relationshipData" }
+        self.relationship_opt_def = { "break" : (0, None),
+                                      "relationshipData" : (1, None) }
         
     # Provide linenr as an alias for cmd_start_linenr
     @property
@@ -1257,6 +1270,16 @@ class MAReader:
         pass
 #        print "lockNode",objects,opts
 
+    def onRename(self, objects, opts):
+        """Callback for the 'rename' MEL command."""
+        pass
+#        print "rename",objects,opts
+
+    def onRelationship(self, objects, opts):
+        """Callback for the 'relationship' MEL command."""
+        pass
+#        print "relationship",objects,opts
+
     # onCommand
     def onCommand(self, cmd, args):
         """Generic command callback.
@@ -1344,6 +1367,18 @@ class MAReader:
                                      self.lockNode_opt_def,
                                      self.lockNode_name_dict)
             self.onLockNode(args, opts)
+        # rename
+        elif cmd=="rename":
+            args, opts = self.getOpt(args,
+                                     self.rename_opt_def,
+                                     self.rename_name_dict)
+            self.onRename(args, opts)
+        # relationship
+        elif cmd=="relationship":
+            args, opts = self.getOpt(args,
+                                     self.relationship_opt_def,
+                                     self.relationship_name_dict)
+            self.onRelationship(args, opts)
         # unknown
         else:
             print >>sys.stderr, "WARNING: %s, line %d: Unknown MEL command: '%s'"%(self.filename, self.cmd_start_linenr, cmd)
